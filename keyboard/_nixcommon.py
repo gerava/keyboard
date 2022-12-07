@@ -3,6 +3,7 @@ import struct
 import os
 import atexit
 from time import time as now
+from time import sleep
 from threading import Thread
 from glob import glob
 try:
@@ -103,7 +104,11 @@ class AggregatedEventDevice(object):
         self.output = output or self.devices[0]
         def start_reading(device):
             while True:
-                self.event_queue.put(device.read_event())
+                try:
+                    self.event_queue.put(device.read_event())
+                except Exception as e:
+                    sleep(5)
+                    device._input_file = None
         for device in self.devices:
             thread = Thread(target=start_reading, args=[device])
             thread.daemon = True
